@@ -48,31 +48,43 @@ A full-stack e-learning web application built with **ASP.NET Core MVC**, **ABP F
 ## Screenshots
 
 ### Admin — Manage Students
+The admin can create new students by filling in their name, email, and password. The students list below shows all registered students along with their enrollment date, exam results summary, and action buttons to enroll them in courses, edit their info, or delete them.
+
 ![Admin Students](Screenshots/admin-students.png)
 
 ---
 
 ### Teacher — Dashboard
+The teacher dashboard gives an overview of all assigned courses at a glance. The top cards show total courses, total enrolled students, total exams, and the overall pass rate across all courses. Each course card below shows per-course stats including students enrolled, number of exams, and pass rate, along with a breakdown table of each exam's attempts and pass rate.
+
 ![Teacher Dashboard](Screenshots/teacher-dashboard.png)
 
 ---
 
 ### Teacher — Upload Lectures
+Teachers can upload lecture files (PDF or video) for their assigned courses. Uploaded lectures are listed in a table showing the title, original file name, file type badge, and file size. Teachers can delete any lecture from this page.
+
 ![Teacher Lectures](Screenshots/teacher-lectures.png)
 
 ---
 
 ### Teacher — Manage Exams
+The teacher's exams page lists all exams belonging to their assigned courses. Each exam shows the title, course, duration, and creation date. Teachers can manage questions for each exam through a modal, edit exam details, or delete exams. New exams can be created using the Create New Exam button.
+
 ![Teacher Exams](Screenshots/teacher-exams.png)
 
 ---
 
 ### Student — Dashboard
+The student dashboard welcomes the logged-in student and shows all their enrolled courses. Under each course, available exams are listed with the total score, creation date, and the student's own results including how many times they attempted the exam and their average score. Students can expand a details panel to see individual attempt breakdowns, and attempt any exam directly from this page.
+
 ![Student Dashboard](Screenshots/student-dashboard.png)
 
 ---
 
 ### Student — My Lectures
+Students can view and download all lectures uploaded by teachers for their enrolled courses. Lectures are organized by course, with each entry showing the title, file type (PDF or Video), file size, and a download button. Courses with no lectures uploaded yet are shown with a placeholder message.
+
 ![Student Lectures](Screenshots/student-lectures.png)
 
 ---
