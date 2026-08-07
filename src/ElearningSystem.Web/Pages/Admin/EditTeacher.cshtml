@@ -1,0 +1,72 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Admin
+@using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal
+@model EditTeacherModel
+@{
+    ViewData["Title"] = "Edit Teacher";
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h1>Manage Teachers</h1>
+    </div>
+    <div class="abp-page-container">
+        <a asp-page="Teachers" class="btn btn-secondary mb-3">
+            <i class="fa fa-arrow-left"></i> Back to Teachers
+        </a>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Update">
+                <input type="hidden" asp-for="TeacherInput.Id" />
+                <input type="hidden" asp-for="TeacherInput.UserId" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="TeacherInput.FirstName" class="form-label">First Name *</label>
+                            <input asp-for="TeacherInput.FirstName" class="form-control" placeholder="First name" />
+                            <span asp-validation-for="TeacherInput.FirstName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="TeacherInput.LastName" class="form-label">Last Name *</label>
+                            <input asp-for="TeacherInput.LastName" class="form-control" placeholder="Last name" />
+                            <span asp-validation-for="TeacherInput.LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="TeacherInput.Email" class="form-label">Email *</label>
+                            <input asp-for="TeacherInput.Email" type="email" class="form-control" placeholder="teacher@example.com" />
+                            <span asp-validation-for="TeacherInput.Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="TeacherInput.Password" class="form-label">Password *</label>
+                        <input asp-for="TeacherInput.Password" type="password" class="form-control" placeholder="Password (min 6 chars, 1 lowercase, 1 uppercase, 1 number)" />
+                        <span asp-validation-for="TeacherInput.Password" class="text-danger"></span>
+                        <small class="text-muted d-block mt-2">
+                            Password must contain:
+                            <ul class="mb-0">
+                                <li>At least 6 characters</li>
+                                <li>At least one lowercase letter (a-z)</li>
+                                <li>At least one uppercase letter (A-Z)</li>
+                                <li>At least one number (0-9)</li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-plus"></i> Edit Teacher
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

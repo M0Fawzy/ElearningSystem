@@ -1,0 +1,488 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Admin
+@model QuestionBankModel
+@{
+    ViewData["Title"] = "Question Bank";
+}
+
+
+<a asp-page="Courses" class="btn btn-secondary mb-3">
+    <i class="fa fa-arrow-left"></i> Back to Courses
+</a>
+
+<form method="post" asp-page-handler="Create" asp-route-id="@Model.Courses.Id" enctype="multipart/form-data">
+    
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Add Question</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="QuestionInput.QuestionText" class="form-label">Question Text *</label>
+                <textarea asp-for="QuestionInput.QuestionText" class="form-control" rows="3" placeholder="Enter your question here"></textarea>
+                <span asp-validation-for="QuestionInput.QuestionText" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Question Image (Optional)</label>
+                <input type="file" name="QuestionImage" class="form-control" accept="image/*" />
+                <small class="text-muted">Accepted formats: JPG, PNG, GIF (Max 5MB)</small>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="QuestionInput.QuestionType" class="form-label">Question Type *</label>
+                        <select asp-for="QuestionInput.QuestionType" class="form-select" id="questionType">
+                            <option value="MultipleChoice">Multiple Choice</option>
+                            <option value="TrueFalse">True/False</option>
+                            <option value="Essay">Essay</option>
+                        </select>
+                        <span asp-validation-for="QuestionInput.QuestionType" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="QuestionInput.Score" class="form-label">Score *</label>
+                        <input asp-for="QuestionInput.Score" type="number" class="form-control" placeholder="e.g., 10" />
+                        <span asp-validation-for="QuestionInput.Score" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answers Section (Only for Non-Essay) -->
+            <div id="answersSection" class="mb-3">
+                <label class="form-label">Answers *</label>
+                <div id="answersList" class="mb-3">
+                    <div class="input-group mb-2">
+                        <input type="text" name="AnswerInputs[0].Text" class="form-control" placeholder="Answer 1" />
+                        <div class="input-group-text">
+                            <input type="checkbox" name="AnswerInputs[0].IsCorrect" class="form-check-input answer-correct" />
+                            <label class="form-check-label ms-2">Correct</label>
+                        </div>
+                        <button class="btn btn-danger" type="button" onclick="removeAnswer(this)">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addAnswer()" id="addAnswerBtn">
+                    <i class="fa fa-plus"></i> Add Answer
+                </button>
+            </div>
+
+            <!-- Essay Correct Answer Section (Only for Essay) -->
+            <div id="essaySection" class="mb-3" style="display: none;">
+                <label class="form-label">Correct Answer *</label>
+                <textarea name="EssayCorrectAnswer" class="form-control" rows="4" placeholder="Enter the correct essay answer..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fa fa-plus"></i>
+                <span>Add Question</span>
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Questions List -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Questions Added (@Model.Questions.Count)</h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            @foreach (var question in Model.Questions)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">@question.QuestionText</h6>
+                            <small class="text-muted">
+                                Type: @question.QuestionType | Score: @question.Score
+                            </small>
+                            @if (question.Answers != null && question.Answers.Count > 0)
+                            {
+                                <div class="mt-2">
+                                    @foreach (var answer in question.Answers)
+                                    {
+                                        <small class="badge bg-light text-dark">
+                                            @answer.AnswerText
+                                            @if (answer.IsCorrect)
+                                            {
+                                                <i class="fa fa-check text-success ms-1"></i>
+                                            }
+                                        </small>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="btn-group">
+                            <button type="button"
+                                    class="btn btn-sm btn-info edit-question-btn"
+                                    data-question-id="@question.Id"
+                                    data-question-text="@question.QuestionText"
+                                    data-question-type="@question.QuestionType"
+                                    data-question-score="@question.Score"
+                                    data-question-image="@question.ImagePath"
+                                    data-answers='@System.Text.Json.JsonSerializer.Serialize(question.Answers)'>
+                                <i class="fa fa-pen"></i>
+                            </button>
+
+                            <form method="post" asp-page-handler="RemoveQuestion" asp-route-courseId="@Model.Courses.Id" asp-route-questionId="@question.Id" style="display: inline;" class="delete-form">
+                                <button type="button" class="btn btn-sm btn-danger delete-btn">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL (SINGLE - OUTSIDE LOOP) -->
+<div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="UpdateQuestion" asp-route-id="@Model.Courses.Id" id="editQuestionForm" enctype="multipart/form-data">
+                <input type="hidden" id="editQuestionId" name="questionId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editQuestionModalLabel">Edit Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Question Text *</label>
+                        <textarea name="QuestionInput.QuestionText" id="editQuestionText" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Question Image (Optional)</label>
+                        <input type="file" name="QuestionImage" id="editQuestionImage" class="form-control" accept="image/*" />
+                        <small class="text-muted">Accepted formats: JPG, PNG, GIF (Max 5MB)</small>
+
+                        <!-- Current Image Preview -->
+                        <div id="currentImagePreview" class="mt-3" style="display: none;">
+                            <small class="text-muted d-block mb-2">Current image:</small>
+                            <img id="currentImageDisplay"
+                                 src=""
+                                 alt="Current question image"
+                                 class="img-thumbnail"
+                                 style="max-width: 300px; max-height: 200px;" />
+                            <br>
+                            <small class="text-muted">Upload a new image to replace it</small>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Question Type *</label>
+                                <select name="QuestionInput.QuestionType" id="editQuestionType" class="form-select">
+                                    <option value="MultipleChoice">Multiple Choice</option>
+                                    <option value="TrueFalse">True/False</option>
+                                    <option value="Essay">Essay</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Score *</label>
+                                <input type="number" name="QuestionInput.Score" id="editQuestionScore" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Answers Section -->
+                    <div id="editAnswersSection" class="mb-3">
+                        <label class="form-label">Answers *</label>
+                        <div id="editAnswersList" class="mb-3">
+                            <!-- Answers will be populated by JavaScript -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addEditAnswer()" id="editAddAnswerBtn">
+                            <i class="fa fa-plus"></i> Add Answer
+                        </button>
+                    </div>
+
+                    <!-- Essay Section -->
+                    <div id="editEssaySection" class="mb-3" style="display: none;">
+                        <label class="form-label">Correct Answer *</label>
+                        <textarea name="EssayCorrectAnswer" id="editEssayAnswer" class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var answerCount = 1;
+        var editAnswerCount = 0;
+
+        // CREATE FORM - Question Type Change
+        var questionTypeSelect = document.getElementById('questionType');
+        if (questionTypeSelect) {
+            questionTypeSelect.addEventListener('change', function () {
+                handleQuestionTypeChange(this.value, 'answersSection', 'essaySection', 'answersList', 'addAnswerBtn', false);
+            });
+        }
+
+        // EDIT FORM - Question Type Change
+        var editQuestionTypeSelect = document.getElementById('editQuestionType');
+        if (editQuestionTypeSelect) {
+            editQuestionTypeSelect.addEventListener('change', function () {
+                handleQuestionTypeChange(this.value, 'editAnswersSection', 'editEssaySection', 'editAnswersList', 'editAddAnswerBtn', true);
+            });
+        }
+
+        function handleQuestionTypeChange(questionType, answersSectionId, essaySectionId, answersListId, addBtnId, isEdit) {
+            var answersSection = document.getElementById(answersSectionId);
+            var essaySection = document.getElementById(essaySectionId);
+            var answersList = document.getElementById(answersListId);
+            var addAnswerBtn = document.getElementById(addBtnId);
+
+            if (questionType === 'Essay') {
+                answersSection.style.display = 'none';
+                essaySection.style.display = 'block';
+            } else if (questionType === 'TrueFalse') {
+                answersSection.style.display = 'block';
+                essaySection.style.display = 'none';
+                addAnswerBtn.style.display = 'none';
+
+                answersList.innerHTML = '';
+                answersList.innerHTML += createAnswerInput(0, 'True', false, true, isEdit);
+                answersList.innerHTML += createAnswerInput(1, 'False', false, true, isEdit);
+
+                if (isEdit) editAnswerCount = 2;
+                else answerCount = 2;
+            } else {
+                answersSection.style.display = 'block';
+                essaySection.style.display = 'none';
+                addAnswerBtn.style.display = 'block';
+
+                answersList.innerHTML = createAnswerInput(0, '', false, false, isEdit);
+
+                if (isEdit) editAnswerCount = 1;
+                else answerCount = 1;
+            }
+        }
+
+        function createAnswerInput(index, text, isCorrect, isReadonly, isEdit) {
+            const prefix = isEdit ? 'AnswerInputs' : 'AnswerInputs';
+            const readonly = isReadonly ? 'readonly style="background-color: #f0f0f0;"' : '';
+            const checked = isCorrect ? 'checked' : '';
+
+            return `
+                <div class="input-group mb-2">
+                    <input type="text" name="${prefix}[${index}].Text" class="form-control"
+                           placeholder="Answer ${index + 1}" value="${text}" ${readonly} />
+                    <div class="input-group-text">
+                        <input type="checkbox" name="${prefix}[${index}].IsCorrect"
+                               class="form-check-input answer-correct" ${checked} />
+                        <label class="form-check-label ms-2">Correct</label>
+                    </div>
+                    ${!isReadonly ? `<button class="btn btn-danger" type="button" onclick="removeAnswer(this)"><i class="fa fa-trash"></i></button>` : ''}
+                </div>
+            `;
+        }
+
+        function addAnswer() {
+            var answersList = document.getElementById('answersList');
+            var newAnswer = document.createElement('div');
+            newAnswer.className = 'input-group mb-2';
+            newAnswer.innerHTML = `
+                <input type="text" name="AnswerInputs[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
+                <div class="input-group-text">
+                    <input type="checkbox" name="AnswerInputs[${answerCount}].IsCorrect" class="form-check-input answer-correct" />
+                    <label class="form-check-label ms-2">Correct</label>
+                </div>
+                <button class="btn btn-danger" type="button" onclick="removeAnswer(this)">
+                    <i class="fa fa-trash"></i>
+                </button>
+            `;
+            answersList.appendChild(newAnswer);
+            answerCount++;
+        }
+
+        function addEditAnswer() {
+            var answersList = document.getElementById('editAnswersList');
+            var newAnswer = document.createElement('div');
+            newAnswer.className = 'input-group mb-2';
+            newAnswer.innerHTML = `
+                <input type="text" name="AnswerInputs[${editAnswerCount}].Text" class="form-control" placeholder="Answer ${editAnswerCount + 1}" />
+                <div class="input-group-text">
+                    <input type="checkbox" name="AnswerInputs[${editAnswerCount}].IsCorrect" class="form-check-input answer-correct" />
+                    <label class="form-check-label ms-2">Correct</label>
+                </div>
+                <button class="btn btn-danger" type="button" onclick="removeAnswer(this)">
+                    <i class="fa fa-trash"></i>
+                </button>
+            `;
+            answersList.appendChild(newAnswer);
+            editAnswerCount++;
+        }
+
+        function removeAnswer(btn) {
+            btn.parentElement.remove();
+        }
+
+        // EDIT BUTTON CLICK - Populate Modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const editButtons = document.querySelectorAll('.edit-question-btn');
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionId = this.dataset.questionId;
+                    const questionText = this.dataset.questionText;
+                    const questionImage= this.dataset.questionImage;
+                    const questionType = this.dataset.questionType;
+                    const questionScore = this.dataset.questionScore;
+                    const answers = JSON.parse(this.dataset.answers || '[]');
+
+                    // Populate form fields
+                    document.getElementById('editQuestionId').value = questionId;
+                    document.getElementById('editQuestionText').value = questionText;
+                    document.getElementById('editQuestionType').value = questionType;
+                    document.getElementById('editQuestionScore').value = questionScore;
+                    document.getElementById('editQuestionImage').value = '';
+
+        // Show current image preview if exists
+        const currentImagePreview = document.getElementById('currentImagePreview');
+        const currentImageDisplay = document.getElementById('currentImageDisplay');
+
+        if (questionImage && questionImage !== '' && questionImage !== 'null') {
+            currentImageDisplay.src = questionImage;
+            currentImagePreview.style.display = 'block';
+        } else {
+            currentImagePreview.style.display = 'none';
+        }
+                    // Populate answers based on question type
+                    const editAnswersList = document.getElementById('editAnswersList');
+                    editAnswersList.innerHTML = '';
+                    editAnswerCount = 0;
+
+                    if (questionType === 'Essay') {
+                        document.getElementById('editAnswersSection').style.display = 'none';
+                        document.getElementById('editEssaySection').style.display = 'block';
+                        document.getElementById('editEssayAnswer').value = answers[0]?.answerText || '';
+                    } else {
+                        document.getElementById('editAnswersSection').style.display = 'block';
+                        document.getElementById('editEssaySection').style.display = 'none';
+
+                        const isReadonly = questionType === 'TrueFalse';
+                        document.getElementById('editAddAnswerBtn').style.display = isReadonly ? 'none' : 'block';
+
+                        answers.forEach((answer, index) => {
+                            // For True/False, ensure we show "True" and "False" text
+                            // Handle both camelCase (answerText) and PascalCase (AnswerText) from JSON
+                            let answerText = answer.answerText || answer.AnswerText || '';
+
+                            if (questionType === 'TrueFalse') {
+                                // Map the answer text to True or False based on index or content
+                                if (answerText && answerText.toLowerCase() === 'true' || index === 0) {
+                                    answerText = 'True';
+                                } else {
+                                    answerText = 'False';
+                                }
+                            }
+
+                            // Create answer element using createElement to avoid innerHTML issues
+                            const answerDiv = document.createElement('div');
+                            answerDiv.className = 'input-group mb-2';
+
+                            const readonly = isReadonly ? 'readonly style="background-color: #f0f0f0;"' : '';
+                            // Handle both camelCase and PascalCase for isCorrect
+                            const isCorrectValue = answer.isCorrect || answer.IsCorrect || false;
+                            const checked = isCorrectValue ? 'checked' : '';
+
+                            answerDiv.innerHTML = `
+                                <input type="text" name="AnswerInputs[${index}].Text" class="form-control"
+                                       placeholder="Answer ${index + 1}" value="${answerText}" ${readonly} />
+                                <div class="input-group-text">
+                                    <input type="checkbox" name="AnswerInputs[${index}].IsCorrect"
+                                           class="form-check-input answer-correct" ${checked} />
+                                    <label class="form-check-label ms-2">Correct</label>
+                                </div>
+                                ${!isReadonly ? `<button class="btn btn-danger" type="button" onclick="removeAnswer(this)"><i class="fa fa-trash"></i></button>` : ''}
+                            `;
+
+                            editAnswersList.appendChild(answerDiv);
+                            editAnswerCount++;
+                        });
+                    }
+
+                    // Show modal - compatible with Bootstrap 5 and older versions
+                    var modalElement = document.getElementById('editQuestionModal');
+
+                    // Try Bootstrap 5 first
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        var modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                    // Try Bootstrap 4/3 with jQuery
+                    else if (typeof $ !== 'undefined' && $.fn.modal) {
+                        $(modalElement).modal('show');
+                    }
+                    // Fallback - manually show
+                    else {
+                        modalElement.classList.add('show');
+                        modalElement.style.display = 'block';
+                        document.body.classList.add('modal-open');
+
+                        // Create backdrop
+                        var backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                });
+            });
+
+            // Delete confirmation
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('.delete-form');
+
+                    abp.message.confirm(
+                        'Are you sure you want to delete this question?',
+                        'Confirm Delete',
+                        function(granted) {
+                            if (granted) {
+                                form.submit();
+                            }
+                        }
+                    );
+                });
+            });
+        });
+
+        // Form submission - ensure checkboxes have values
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                document.querySelectorAll('.answer-correct').forEach(checkbox => {
+                    checkbox.value = checkbox.checked ? 'true' : 'false';
+                });
+            });
+        });
+    </script>
+}

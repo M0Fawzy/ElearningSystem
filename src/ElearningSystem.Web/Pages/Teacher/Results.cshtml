@@ -1,0 +1,181 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Teacher
+@model ResultsModel
+@{
+    ViewData["Title"] = "Student Results";
+}
+
+<div class="abp-page-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <h1>Student Results</h1>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Course</label>
+                    <select id="courseFilter" class="form-select">
+                        <option value="">All Courses</option>
+                        @foreach (var course in Model.TeacherCourses)
+                        {
+                            <option value="@course.Id">@course.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Exam</label>
+                    <select id="examFilter" class="form-select">
+                        <option value="">All Exams</option>
+                        @foreach (var exam in Model.TeacherExams)
+                        {
+                            <option value="@exam.Id" data-course-id="@exam.CourseId">@exam.Title</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Result</label>
+                    <select id="resultFilter" class="form-select">
+                        <option value="">All</option>
+                        <option value="pass">Pass</option>
+                        <option value="fail">Fail</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (Model.StudentScores.Count == 0)
+            {
+                <div class="alert alert-info text-center">
+                    <p>No student results yet.</p>
+                </div>
+            }
+            else
+            {
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white text-center p-3">
+                            <h4>@Model.StudentScores.Count</h4>
+                            <p class="mb-0">Total Attempts</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white text-center p-3">
+                            <h4>@Model.StudentScores.Count(s => s.Percentage >= 70)</h4>
+                            <p class="mb-0">Passed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white text-center p-3">
+                            <h4>@Model.StudentScores.Count(s => s.Percentage < 70)</h4>
+                            <p class="mb-0">Failed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white text-center p-3">
+                            <h4>@Model.StudentScores.Average(s => s.Percentage).ToString("F1")%</h4>
+                            <p class="mb-0">Average Score</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped" id="resultsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Student</th>
+                                <th>Exam</th>
+                                <th>Course</th>
+                                <th>Score</th>
+                                <th>Percentage</th>
+                                <th>Date Taken</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in Model.StudentScores.OrderByDescending(s => s.DateTaken))
+                            {
+                                var exam = Model.TeacherExams.FirstOrDefault(e => e.Id == result.ExamId);
+                                var course = Model.TeacherCourses.FirstOrDefault(c => c.Id == exam?.CourseId);
+                                var student = Model.Students.FirstOrDefault(s => s.Id == result.StudentId);
+                                var isPassed = result.Percentage >= 70;
+
+                                <tr class="result-row"
+                                    data-exam-id="@result.ExamId"
+                                    data-course-id="@exam?.CourseId"
+                                    data-result="@(isPassed ? "pass" : "fail")">
+                                    <td>@student?.FirstName @student?.LastName</td>
+                                    <td>@(exam?.Title ?? "Unknown")</td>
+                                    <td>@(course?.Name ?? "Unknown")</td>
+                                    <td>@result.Score / @result.MaxScore</td>
+                                    <td>@result.Percentage.ToString("F1")%</td>
+                                    <td>@result.DateTaken.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        @if (isPassed)
+                                        {
+                                            <span class="badge bg-success">Pass</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Fail</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const courseFilter = document.getElementById('courseFilter');
+        const examFilter = document.getElementById('examFilter');
+        const resultFilter = document.getElementById('resultFilter');
+
+        // When course changes, filter exam dropdown
+        courseFilter.addEventListener('change', function () {
+            const selectedCourse = this.value;
+            const examOptions = examFilter.querySelectorAll('option');
+
+            examOptions.forEach(option => {
+                if (option.value === '') return; // skip "All Exams"
+                if (selectedCourse === '' || option.dataset.courseId === selectedCourse) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            examFilter.value = '';
+            filterRows();
+        });
+
+        examFilter.addEventListener('change', filterRows);
+        resultFilter.addEventListener('change', filterRows);
+
+        function filterRows() {
+            const selectedCourse = courseFilter.value;
+            const selectedExam = examFilter.value;
+            const selectedResult = resultFilter.value;
+
+            const rows = document.querySelectorAll('.result-row');
+
+            rows.forEach(row => {
+                const matchesCourse = selectedCourse === '' || row.dataset.courseId === selectedCourse;
+                const matchesExam = selectedExam === '' || row.dataset.examId === selectedExam;
+                const matchesResult = selectedResult === '' || row.dataset.result === selectedResult;
+
+                row.style.display = matchesCourse && matchesExam && matchesResult ? '' : 'none';
+            });
+        }
+    </script>
+}

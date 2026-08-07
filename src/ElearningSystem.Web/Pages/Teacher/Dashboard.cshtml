@@ -1,0 +1,166 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Teacher
+@model DashboardModel
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<div class="abp-page-container">
+
+    <!-- Welcome Header -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h1 class="mb-0">
+                <i class="fa fa-chalkboard-teacher me-2"></i>
+                Welcome, @Model.CurrentTeacher.FirstName @Model.CurrentTeacher.LastName
+            </h1>
+        </div>
+        <div class="card-body">
+            <p class="lead mb-0">Email: @Model.CurrentTeacher.Email</p>
+        </div>
+    </div>
+
+    <!-- Overall Stats -->
+    @{
+        var totalStudents = Model.CourseStudentCount.Values.Sum();
+        var totalExams = Model.CourseExams.Values.Sum(e => e.Count);
+        var allResults = Model.ExamResults.Values.SelectMany(r => r).ToList();
+        var overallPassRate = allResults.Count > 0
+        ? allResults.Count(r => r.Percentage >= 70) * 100.0 / allResults.Count
+        : 0;
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white text-center p-3">
+                <h3>@Model.TeacherCourses.Count</h3>
+                <p class="mb-0"><i class="fa fa-book me-1"></i> Courses</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white text-center p-3">
+                <h3>@totalStudents</h3>
+                <p class="mb-0"><i class="fa fa-users me-1"></i> Total Students</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white text-center p-3">
+                <h3>@totalExams</h3>
+                <p class="mb-0"><i class="fa fa-file-alt me-1"></i> Total Exams</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center p-3">
+                <h3>@overallPassRate.ToString("F1")%</h3>
+                <p class="mb-0"><i class="fa fa-chart-bar me-1"></i> Overall Pass Rate</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses -->
+    @if (Model.TeacherCourses.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            <p>You are not assigned to any courses yet. Contact an admin to get assigned.</p>
+        </div>
+    }
+    else
+    {
+        <h4 class="mb-3">My Courses</h4>
+        @foreach (var course in Model.TeacherCourses)
+        {
+            var exams = Model.CourseExams.ContainsKey(course.Id) ? Model.CourseExams[course.Id] : new();
+            var studentCount = Model.CourseStudentCount.ContainsKey(course.Id) ? Model.CourseStudentCount[course.Id] : 0;
+
+            var courseResults = exams
+            .Where(e => Model.ExamResults.ContainsKey(e.Id))
+            .SelectMany(e => Model.ExamResults[e.Id])
+            .ToList();
+
+            var passRate = courseResults.Count > 0
+            ? courseResults.Count(r => r.Percentage >= 70) * 100.0 / courseResults.Count
+            : 0;
+
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa fa-book me-2"></i>@course.Name</h5>
+                    <a asp-page="/Exams/TeacherExams" class="btn btn-sm btn-light">
+                        <i class="fa fa-file-alt me-1"></i> Manage Exams
+                    </a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">@course.Description</p>
+
+                    <!-- Course Stats -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <h4 class="text-info">@studentCount</h4>
+                                <small class="text-muted">Students Enrolled</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <h4 class="text-warning">@exams.Count</h4>
+                                <small class="text-muted">Exams</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <h4 class="text-success">@passRate.ToString("F1")%</h4>
+                                <small class="text-muted">Pass Rate</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exams List -->
+                    @if (exams.Count > 0)
+                    {
+                        <h6>Exams</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Total Score</th>
+                                        <th>Duration</th>
+                                        <th>Attempts</th>
+                                        <th>Pass Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var exam in exams)
+                                    {
+                                        var examResults = Model.ExamResults.ContainsKey(exam.Id)
+                                        ? Model.ExamResults[exam.Id]
+                                        : new();
+
+                                        var examPassRate = examResults.Count > 0
+                                        ? examResults.Count(r => r.Percentage >= 70) * 100.0 / examResults.Count
+                                        : 0;
+
+                                        <tr>
+                                            <td><strong>@exam.Title</strong></td>
+                                            <td>@exam.TotalScore</td>
+                                            <td>@exam.DurationMinutes min</td>
+                                            <td>@examResults.Count</td>
+                                            <td>
+                                                <span class="badge @(examPassRate >= 70 ? "bg-success" : "bg-danger")">
+                                                    @examPassRate.ToString("F1")%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No exams created for this course yet.</p>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

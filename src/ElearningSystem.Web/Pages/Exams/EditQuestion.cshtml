@@ -1,0 +1,88 @@
+﻿@page "/Exams/EditQuestion"
+@using ElearningSystem.Web.Pages.Exams
+@using ElearningSystem.Entities
+@model EditQuestionModel
+@{
+    ViewData["Title"] = "Edit Exam";
+}
+
+<div class="abp-page-container">
+
+    @if (Model.ExamInput != null)
+    {
+        @if (User.IsInRole("Teacher"))
+        {
+            <a asp-page="/Exams/TeacherExams" class="btn btn-secondary mb-3">
+                <i class="fa fa-arrow-left"></i> Back to Exams
+            </a>
+        }
+        else
+        {
+            <a asp-page="Exam" class="btn btn-secondary mb-3">
+                <i class="fa fa-arrow-left"></i> Back to Exams
+            </a>
+        }
+
+
+        <!-- Step 1: Create Exam Details -->
+        <div class="card">
+            <div class="card-header">
+                <h1>Update Exam</h1>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="UpdateExam" >
+                    <input type="hidden" asp-for="ExamInput.Id" />
+
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.Title" class="form-label">Exam Title *</label>
+                                <input asp-for="ExamInput.Title" class="form-control" placeholder="e.g., Mathematics Final Exam" />
+                                <span asp-validation-for="ExamInput.Title" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.TotalScore" class="form-label">Total Score *</label>
+                                <input asp-for="ExamInput.TotalScore" type="number" class="form-control" placeholder="e.g., 100" />
+                                <span asp-validation-for="ExamInput.TotalScore" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.CourseId" class="form-label">Select Course *</label>
+                                <select asp-for="ExamInput.CourseId" class="form-select" required>
+                                    <option value="">-- Select a Course --</option>
+                                    @foreach (var course in Model.Courses)
+                                    {
+                                        <option value="@course.Id">@course.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ExamInput.CourseId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.DurationMinutes" class="form-label">Duration (Minutes) *</label>
+                                <input asp-for="ExamInput.DurationMinutes" type="number" class="form-control" placeholder="e.g., 60"  />
+                                <span asp-validation-for="ExamInput.DurationMinutes" class="text-danger"></span>
+                                <small class="text-muted">1 - 480 minutes (8 hours max)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-arrow-right"></i>
+                        <span>Update</span>
+                    </button>
+                    
+                </form>
+            </div>
+        </div>
+    }
+    </div>

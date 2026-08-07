@@ -1,0 +1,232 @@
+﻿@page "/Exams/CreateExam"
+@using ElearningSystem.Web.Pages.Exams
+@using ElearningSystem.Entities
+@model CreateExamModel
+@{
+    ViewData["Title"] = "Create Exam";
+}
+
+<div class="abp-page-container">
+    @if (Model.CurrentExam == null)
+    {
+        <!-- Step 1: Create Exam Details -->
+        <div class="card">
+            <div class="card-header">
+                <h1>Create New Exam</h1>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Create">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.Title" class="form-label">Exam Title *</label>
+                                <input asp-for="ExamInput.Title" class="form-control" placeholder="e.g., Mathematics Final Exam" />
+                                <span asp-validation-for="ExamInput.Title" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.TotalScore" class="form-label">Total Score *</label>
+                                <input asp-for="ExamInput.TotalScore" type="number" class="form-control" placeholder="e.g., 100" />
+                                <span asp-validation-for="ExamInput.TotalScore" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.CourseId" class="form-label">Select Course *</label>
+                                <select asp-for="ExamInput.CourseId" class="form-select" required>
+                                    <option value="">-- Select a Course --</option>
+                                    @foreach (var course in Model.Courses)
+                                    {
+                                        <option value="@course.Id">@course.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ExamInput.CourseId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamInput.DurationMinutes" class="form-label">Duration (Minutes) *</label>
+                                <input asp-for="ExamInput.DurationMinutes" type="number" class="form-control" placeholder="e.g., 60" />
+                                <span asp-validation-for="ExamInput.DurationMinutes" class="text-danger"></span>
+                                <small class="text-muted">1 - 480 minutes (8 hours max)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-arrow-right"></i>
+                        <span>Next</span>
+                    </button>
+                    @if (User.IsInRole("Teacher"))
+                    {
+                        <a asp-page="/Exams/TeacherExams" class="btn btn-secondary">Cancel</a>
+                    }
+                    else
+                    {
+                        <a asp-page="Exam" class="btn btn-secondary">Cancel</a>
+                    }
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Step 2: Add Questions -->
+        <a asp-page="Exam" class="btn btn-secondary mb-3">
+            <i class="fa fa-arrow-left"></i> Back to Exams
+        </a>
+
+        <div class="alert alert-info mb-4">
+            <strong>Exam Created:</strong> @Model.CurrentExam.Title (Score: @Model.CurrentExam.TotalScore, Duration: @Model.CurrentExam.DurationMinutes minutes)
+        </div>
+
+        <form method="post" asp-page-handler="AddQuestion" asp-route-examId="@Model.CurrentExam.Id">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Question</h5>
+                </div>
+                <div class="card-body">
+                    @* <div class="mb-3">
+                        <label asp-for="QuestionInput.QuestionText" class="form-label">Question Text *</label>
+                        <textarea asp-for="QuestionInput.QuestionText" class="form-control" rows="3" placeholder="Enter your question here"></textarea>
+                        <span asp-validation-for="QuestionInput.QuestionText" class="text-danger"></span>
+                    </div> *@
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamQuestionInput.QuestionId" class="form-label">Select Question *</label>
+                                <select asp-for="ExamQuestionInput.QuestionId" class="form-select" required>
+                                    <option value="">-- Select a Question --</option>
+                                    @foreach (var Question in Model.CourseQuestions)
+                                    {
+                                        <option value="@Question.Id">@Question.QuestionText - Score: @Question.Score</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ExamQuestionInput.QuestionId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ExamQuestionInput.OrderIndex" class="form-label">Question Order *</label>
+                                <input asp-for="ExamQuestionInput.OrderIndex" type="number" class="form-control" placeholder="e.g., 1" />
+                                <span asp-validation-for="ExamQuestionInput.OrderIndex" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                   
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-plus"></i>
+                        <span>Add Question</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+      @if (Model.Questions.Count > 0){
+      <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Questions Added (@Model.Questions.Count)</h5>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                @foreach (var question in Model.Questions)
+                {
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">@question.QuestionText</h6>
+                                <small class="text-muted">
+                                    Type: @question.QuestionType | Score: @question.Score
+                                </small>
+                                @if (question.Answers != null && question.Answers.Count > 0)
+                                {
+                                    <div class="mt-2">
+                                        @foreach (var answer in question.Answers)
+                                        {
+                                            <small class="badge bg-light text-dark">
+                                                @answer.AnswerText
+                                                @if (answer.IsCorrect)
+                                                {
+                                                    <i class="fa fa-check text-success ms-1"></i>
+                                                }
+                                            </small>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        <form method="post" asp-page-handler="RemoveQuestion" asp-route-examId="@Model.CurrentExam.Id" asp-route-questionId="@question.Id" style="display: inline;" class="delete-form ">
+                                <button type="button" class="btn btn-sm btn-danger delete-btn">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+    </div>
+   }
+            <div class="row">
+                <div class="col-md-6">
+                @if (User.IsInRole("Teacher"))
+                {
+                    <a asp-page="/Exams/TeacherExams" class="btn btn-secondary w-100">
+                        <i class="fa fa-times"></i> Cancel
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="Exam" class="btn btn-secondary w-100">
+                        <i class="fa fa-times"></i> Cancel
+                    </a>
+                }
+                </div>
+                <div class="col-md-6">
+                @if (User.IsInRole("Teacher"))
+                {
+                    <a asp-page="/Exams/TeacherExams" class="btn btn-success w-100">
+                        <i class="fa fa-check"></i> Done
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="/Exams/Exam" class="btn btn-success w-100">
+                        <i class="fa fa-check"></i> Done
+                    </a>
+                }
+
+                </div>
+            </div>
+        
+    }
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+                // Get all delete buttons
+                const deleteButtons = document.querySelectorAll('.delete-btn');
+
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const form = this.closest('.delete-form');
+
+                        // Use ABP's notification service
+                        abp.message.confirm(
+                            'Are you sure you want to delete this?',
+                            'Confirm Delete',
+                            function(granted) {
+                                if (granted) {
+                                    form.submit();  // Submit the form if confirmed
+                                }
+                            }
+                        );
+                    });
+                });
+            });
+</script>

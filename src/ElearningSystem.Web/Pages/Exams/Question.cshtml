@@ -1,0 +1,204 @@
+﻿@* @page "/Exams/Question"
+@using ElearningSystem.Web.Pages.Exams
+@using ElearningSystem.Entities
+@model QuestionModel
+@{
+    ViewData["Title"] = "Edit Question";
+}
+<div class="abp-page-container">
+    
+        
+        <a asp-page="Exam" class="btn btn-secondary mb-3">
+            <i class="fa fa-arrow-left"></i> Back to Exams
+        </a>
+
+         <div class="alert alert-info mb-4">
+            <strong>Exam Created:</strong> @Model.CurrentExam.Title (Score: @Model.CurrentExam.TotalScore)
+        </div> 
+
+        <form method="post" asp-page-handler="UpdateQuestion" asp-route-id="@Model.idd">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Question</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="QuestionInput.QuestionText" class="form-label">Question Text *</label>
+                        <textarea asp-for="QuestionInput.QuestionText" class="form-control" rows="3" placeholder="Enter your question here"></textarea>
+                        <span asp-validation-for="QuestionInput.QuestionText" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="QuestionInput.QuestionType" class="form-label">Question Type *</label>
+                                <select asp-for="QuestionInput.QuestionType" class="form-select" id="questionType">
+                                    <option value="MultipleChoice">Multiple Choice</option>
+                                    <option value="TrueFalse">True/False</option>
+                                    <option value="Essay">Essay</option>
+                                </select>
+                                <span asp-validation-for="QuestionInput.QuestionType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="QuestionInput.Score" class="form-label">Score *</label>
+                                <input asp-for="QuestionInput.Score" type="number" class="form-control" placeholder="e.g., 10" />
+                                <span asp-validation-for="QuestionInput.Score" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Answers Section (Only for Non-Essay) -->
+                    <div id="answersSection" class="mb-3">
+                        <label class="form-label">Answers *</label>
+                        <div id="answersList" class="mb-3">
+                            <div class="input-group mb-2">
+                                <input type="text" name="AnswerInputs[0].Text" class="form-control" placeholder="Answer 1" />
+                                <div class="input-group-text">
+                                    <input type="checkbox" name="AnswerInputs[0].IsCorrect" class="form-check-input answer-correct" />
+                                    <label class="form-check-label ms-2">Correct</label>
+                                </div>
+                                <button class="btn btn-danger" type="button" onclick="removeAnswer(this)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addAnswer()">
+                            <i class="fa fa-plus"></i> Add Answer
+                        </button>
+                    </div>
+
+                    <!-- Essay Correct Answer Section (Only for Essay) -->
+                    <div id="essaySection" class="mb-3" style="display: none;">
+                        <label class="form-label">Correct Answer *</label>
+                        <textarea name="EssayCorrectAnswer" class="form-control" rows="4" placeholder="Enter the correct essay answer..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-plus"></i>
+                        <span>Add Question</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Questions List -->
+        @if (Model.Questions.Count > 0)
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Questions Added (@Model.Questions.Count)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        @foreach (var question in Model.Questions)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">@question.QuestionText</h6>
+                                        <small class="text-muted">
+                                            Type: @question.QuestionType | Score: @question.Score
+                                        </small>
+                                        @if (question.Answers != null && question.Answers.Count > 0)
+                                        {
+                                            <div class="mt-2">
+                                                @foreach (var answer in question.Answers)
+                                                {
+                                                    <small class="badge bg-light text-dark">
+                                                        @answer.AnswerText
+                                                        @if (answer.IsCorrect)
+                                                        {
+                                                            <i class="fa fa-check text-success ms-1"></i>
+                                                        }
+                                                    </small>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <form method="post" asp-page-handler="RemoveQuestion" asp-route-examId="@Model.CurrentExam.Id" asp-route-questionId="@question.Id" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <a asp-page="Exam" class="btn btn-secondary w-100">
+                        <i class="fa fa-times"></i> Cancel
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a asp-page="Exam" class="btn btn-success w-100">
+                        <i class="fa fa-check"></i> Done
+                    </a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        var answerCount = 1;
+
+        // Only run this if questionType element exists
+        var questionTypeSelect = document.getElementById('questionType');
+        if (questionTypeSelect) {
+            questionTypeSelect.addEventListener('change', function () {
+                var answersSection = document.getElementById('answersSection');
+                var essaySection = document.getElementById('essaySection');
+                if (this.value === 'Essay') {
+                    answersSection.style.display = 'none';
+                    essaySection.style.display = 'block';
+                } else {
+                    answersSection.style.display = 'block';
+                    essaySection.style.display = 'none';
+                }
+            });
+        }
+
+        function addAnswer() {
+            var answersList = document.getElementById('answersList');
+            var newAnswer = document.createElement('div');
+            newAnswer.className = 'input-group mb-2';
+            newAnswer.innerHTML = `
+                <input type="text" name="AnswerInputs[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
+                <div class="input-group-text">
+                    <input type="checkbox" name="AnswerInputs[${answerCount}].IsCorrect" class="form-check-input answer-correct" />
+                    <label class="form-check-label ms-2">Correct</label>
+                </div>
+                <button class="btn btn-danger" type="button" onclick="removeAnswer(this)">
+                    <i class="fa fa-trash"></i>
+                </button>
+            `;
+            answersList.appendChild(newAnswer);
+            answerCount++;
+        }
+
+        function removeAnswer(btn) {
+            btn.parentElement.remove();
+        }
+
+        // Before form submission, ensure checkboxes are properly set
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                document.querySelectorAll('.answer-correct').forEach(checkbox => {
+                    if (checkbox.checked) {
+                        checkbox.value = 'true';
+                    } else {
+                        checkbox.value = 'false';
+                    }
+                });
+            });
+        });
+    </script>
+}
+ *@

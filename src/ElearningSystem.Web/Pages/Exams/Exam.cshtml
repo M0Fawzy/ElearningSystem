@@ -1,0 +1,444 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Exams
+@model ExamModel
+@{
+    ViewData["Title"] = "Exams";
+}
+
+<div class="abp-page-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <h1>Exams</h1>
+            </div>
+            <div class="card-toolbar">
+                <a asp-page="CreateExam" class="btn btn-primary">
+                    <i class="fa fa-plus"></i>
+                    <span>Create New Exam</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (Model.Exams.Count == 0)
+            {
+                <div class="alert alert-info text-center">
+                    <p>No exams available. Create one to get started!</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Title</th>
+                                <th>Course</th>
+                                <th>Created Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var exam in Model.Exams)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@exam.Title</strong>
+                                    </td>
+                                    <td>@{
+                                    var Course=Model.Courses.FirstOrDefault(C => C.Id == exam.CourseId)?.Name ?? "Unknown";
+                                         }
+                                        @Course
+                                    </td>
+                                    <td>@exam.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-page="AttemptExam" asp-route-id="@exam.Id" class="btn btn-sm btn-info">
+                                                <i class="fa fa-play"></i>
+                                                <span>Attempt</span>
+                                            </a>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-info manage-questions-btn"
+                                                    data-exam-id="@exam.Id"
+                                                    data-exam-title="@exam.Title">
+                                                    
+                                                <i class="fa fa-pen"></i> Manage Questions
+                                            </button>
+
+
+                                            <a asp-page="EditQuestion" asp-route-id="@exam.Id" class="btn btn-sm btn-info">
+                                                <i class="fa fa-pen"></i> Edit Exam
+                                            </a>
+
+                                            @* <a asp-page="Question" asp-route-id="@exam.Id" class="btn btn-sm btn-info">
+                                                <i class="fa fa-pen"></i> Edit Question
+                                            </a> *@
+
+                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteId('@exam.Id')">
+                                                <i class="fa fa-trash"></i>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <!-- After the table -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <!-- Showing X-Y of Z -->
+                        <div>
+                            Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) -
+                            @Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)
+                            of @Model.TotalCount Exams
+                        </div>
+
+                        <!-- Pagination buttons -->
+                        <nav>
+                            <ul class="pagination">
+                                <!-- Previous button -->
+                                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" asp-page="/Exams/Exam"
+                                       asp-route-currentPage="@(Model.CurrentPage - 1)">
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                @for (int i = 1; i <= Math.Ceiling((double)Model.TotalCount / Model.PageSize); i++)
+                                {
+                                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                                        <a class="page-link" asp-page="/Exams/Exam"
+                                           asp-route-currentPage="@i">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <!-- Next button -->
+                                <li class="page-item @(Model.CurrentPage >= Math.Ceiling((double)Model.TotalCount / Model.PageSize) ? "disabled" : "")">
+                                    <a class="page-link" asp-page="/Exams/Exam"
+                                       asp-route-currentPage="@(Model.CurrentPage + 1)">
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Manage Questions Modal -->
+<div class="modal fade" id="manageQuestionsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExamTitle">Manage Questions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading questions...</p>
+                </div>
+
+                <!-- Questions in Exam Section -->
+                <div id="questionsInExamSection">
+                    <h6>Questions in Exam (<span id="examQuestionsCount">0</span>)</h6>
+                    <div id="examQuestionsList" class="list-group mb-3">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div id="noQuestionsMessage" style="display: none;">
+                        <p class="text-muted">No questions in this exam yet. Add some below!</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Available Questions Section -->
+                <div id="availableQuestionsSection">
+                    <h6>Add Questions (<span id="availableQuestionsCount">0</span>)</h6>
+                    <div id="availableQuestionsList" class="list-group">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div id="noAvailableMessage" style="display: none;">
+                        <p class="text-muted">All questions from this course are already in the exam!</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this exam?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" asp-page-handler="Delete" id="deleteForm" style="display:inline;">
+                    <input type="hidden" name="id" id="deleteId" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setDeleteId(id) {
+            document.getElementById('deleteId').value = id;
+        }
+    </script>
+
+
+    <script>
+    let currentExamId = null;
+
+    // When "Manage Questions" button is clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        const manageButtons = document.querySelectorAll('.manage-questions-btn');
+        
+        manageButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                currentExamId = this.dataset.examId;
+                const examTitle = this.dataset.examTitle;
+                
+                // Set modal title
+                document.getElementById('modalExamTitle').textContent = 
+                    `Manage Questions: ${examTitle}`;
+                
+                // Show loading
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('questionsInExamSection').style.display = 'none';
+                document.getElementById('availableQuestionsSection').style.display = 'none';
+                
+                // Open modal
+                const modal = new bootstrap.Modal(document.getElementById('manageQuestionsModal'));
+                modal.show();
+                
+                // Load questions
+                loadQuestions(currentExamId);
+            });
+        });
+    });
+
+    // Load questions via AJAX
+    function loadQuestions(examId) {
+        fetch(`/Exams/Exam?handler=LoadQuestions&id=${examId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('questionsInExamSection').style.display = 'block';
+                document.getElementById('availableQuestionsSection').style.display = 'block';
+                
+                // Populate questions in exam
+                displayQuestionsInExam(data.questionsInExam);
+                
+                // Populate available questions
+                displayAvailableQuestions(data.availableQuestions);
+            })
+            .catch(error => {
+                console.error('Error loading questions:', error);
+                alert('Error loading questions. Please try again.');
+            });
+    }
+
+    // Display questions in exam
+    function displayQuestionsInExam(questions) {
+        const container = document.getElementById('examQuestionsList');
+        const countSpan = document.getElementById('examQuestionsCount');
+        const noQuestionsMsg = document.getElementById('noQuestionsMessage');
+        
+        container.innerHTML = '';
+        countSpan.textContent = questions.length;
+        
+        if (questions.length === 0) {
+            noQuestionsMsg.style.display = 'block';
+            container.style.display = 'none';
+            return;
+        }
+        
+        noQuestionsMsg.style.display = 'none';
+        container.style.display = 'block';
+        
+        questions.forEach((question, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'list-group-item';
+            questionDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${index + 1}. ${question.questionText}</h6>
+                        <small class="text-muted">
+                            Type: ${question.questionType} | Score: ${question.score}
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-danger remove-question-btn" 
+                            data-question-id="${question.id}">
+                        <i class="fa fa-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+            container.appendChild(questionDiv);
+        });
+        
+        // Add event listeners to remove buttons
+        attachRemoveListeners();
+    }
+
+    // Display available questions
+    function displayAvailableQuestions(questions) {
+        const container = document.getElementById('availableQuestionsList');
+        const countSpan = document.getElementById('availableQuestionsCount');
+        const noAvailableMsg = document.getElementById('noAvailableMessage');
+        
+        container.innerHTML = '';
+        countSpan.textContent = questions.length;
+        
+        if (questions.length === 0) {
+            noAvailableMsg.style.display = 'block';
+            container.style.display = 'none';
+            return;
+        }
+        
+        noAvailableMsg.style.display = 'none';
+        container.style.display = 'block';
+        
+        questions.forEach(question => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'list-group-item';
+            questionDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${question.questionText}</h6>
+                        <small class="text-muted">
+                            Type: ${question.questionType} | Score: ${question.score}
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-success add-question-btn" 
+                            data-question-id="${question.id}">
+                        <i class="fa fa-plus"></i> Add
+                    </button>
+                </div>
+            `;
+            container.appendChild(questionDiv);
+        });
+        
+        // Add event listeners to add buttons
+        attachAddListeners();
+    }
+
+    // Add question to exam
+    function attachAddListeners() {
+        const addButtons = document.querySelectorAll('.add-question-btn');
+        
+        addButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.dataset.questionId;
+                
+                // Disable button during request
+                this.disabled = true;
+                
+                // Make AJAX call
+                fetch(`/Exams/Exam?handler=AddQuestions&id=${currentExamId}&questionId=${questionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload questions
+                        loadQuestions(currentExamId);
+                    } else {
+                        alert(data.message);
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding question:', error);
+                    alert('Error adding question. Please try again.');
+                    this.disabled = false;
+                });
+            });
+        });
+    }
+
+    // Remove question from exam
+            // Remove question from exam
+        function attachRemoveListeners() {
+            const removeButtons = document.querySelectorAll('.remove-question-btn');
+
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionId = this.dataset.questionId;
+
+                    // Use ABP's confirmation dialog
+                    abp.message.confirm(
+                        'Remove this question from the exam?',
+                        'Confirm Removal',
+                        function(confirmed) {
+                            if (confirmed) {
+                                // Disable button during request
+                                button.disabled = true;
+
+                                // Make AJAX call
+                                fetch(`/Exams/Exam?handler=RemoveQuestions&id=${currentExamId}&questionId=${questionId}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        // Show success message
+                                        abp.notify.success(data.message);
+                                        // Reload questions
+                                        loadQuestions(currentExamId);
+                                    } else {
+                                        abp.notify.error(data.message);
+                                        button.disabled = false;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error removing question:', error);
+                                    abp.notify.error('Error removing question. Please try again.');
+                                    button.disabled = false;
+                                });
+                            }
+                        }
+                    );
+                });
+            });
+        }
+</script>
+
+}

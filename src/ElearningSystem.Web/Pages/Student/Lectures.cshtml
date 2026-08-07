@@ -1,0 +1,99 @@
+﻿@page
+@using ElearningSystem.Web.Pages.Student
+@model LecturesModel
+@{
+    ViewData["Title"] = "My Lectures";
+}
+
+<div class="abp-page-container">
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h1 class="mb-0">
+                <i class="fa fa-video me-2"></i> My Lectures
+            </h1>
+        </div>
+    </div>
+
+    @if (Model.StudentCourses.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            <p>You are not enrolled in any courses yet.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var course in Model.StudentCourses)
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fa fa-book me-2"></i> @course.Name</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var lectures = Model.CourseLectures.ContainsKey(course.Id)
+                        ? Model.CourseLectures[course.Id]
+                        : new();
+                    }
+
+                    @if (lectures.Count == 0)
+                    {
+                        <p class="text-muted">No lectures uploaded for this course yet.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Type</th>
+                                        <th>Size</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var lecture in lectures)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (lecture.FileType == "pdf")
+                                                {
+                                                    <i class="fa fa-file-pdf text-danger me-2"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fa fa-file-video text-primary me-2"></i>
+                                                }
+                                                <strong>@lecture.Title</strong>
+                                            </td>
+                                            <td>
+                                                @if (lecture.FileType == "pdf")
+                                                {
+                                                    <span class="badge bg-danger">PDF</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">Video</span>
+                                                }
+                                            </td>
+                                            <td>@((lecture.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</td>
+                                            <td>
+                                                <a asp-page="/Student/Lectures"
+                                                   asp-page-handler="Download"
+                                                   asp-route-id="@lecture.Id"
+                                                   class="btn btn-sm btn-success">
+                                                    <i class="fa fa-download me-1"></i> Download
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,265 @@
+﻿@page "/Exams/AttemptExam"
+@using ElearningSystem.Web.Pages.Exams
+@model AttemptExamModel
+@{
+    ViewData["Title"] = Model.Exam?.Title ?? "Attempt Exam";
+}
+
+<div class="abp-page-container">
+    @if (Model.ExamSubmitted)
+    {
+        <!-- Results -->
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Exam Results</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="display-4 text-success mb-3">@Model.Score / @Model.Exam.TotalScore</h2>
+                <h4 class="text-info mb-4">@Model.Percentage%</h4>
+                <p class="lead">
+                    @if (Model.Percentage >= 70)
+                    {
+                        <span class="badge bg-success">Passed</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Failed</span>
+                    }
+                </p>
+                <a asp-page="Index" class="btn btn-primary btn-lg mt-4">
+                    <i class="fa fa-home"></i> Back to Exams
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+      
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-1">@Model.Exam.Title</h3>
+                    <small>Total Score: @Model.Exam.TotalScore Points</small>
+                </div>
+                <!-- TIMER DISPLAY -->
+                <div id="timerDisplay" class="text-white" style="font-size: 24px; font-weight: bold; text-align: center;">
+                    <div id="timeRemaining">@Model.DurationSeconds</div>
+                    <small>seconds remaining</small>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" asp-page-handler="Submit" asp-route-examId="@Model.Exam.Id">
+            <!-- Questions -->
+            @if (Model.Questions.Count > 0)
+            {
+                <div class="card mb-4">
+                    <div class="card-body">
+                        @for (int i = 0; i < Model.Questions.Count; i++)
+                        {
+                            var question = Model.Questions[i];
+                            <div class="mb-5 pb-4" style="border-bottom: 1px solid #e9ecef;">
+                                <div class="mb-3">
+                                    <h5 class="mb-2">
+                                        <span class="badge bg-secondary">Q@(i + 1)</span>
+                                        @question.QuestionText
+                                    </h5>
+
+                                    @if (!string.IsNullOrEmpty(question.ImagePath))
+                                    {
+                                        <div class="question-image-container mb-3">
+                                            <img src="@question.ImagePath"
+                                                 alt="Question image"
+                                                 class="question-image img-fluid" />
+                                        </div>
+                                    }
+                                    
+                                    <small class="text-muted d-block">
+                                        Type: @question.QuestionType | Score: @question.Score Points
+                                    </small>
+                                </div>
+
+                                @if (question.QuestionType.ToString() == "Essay")
+                                {
+                                    <!-- Essay Answer -->
+                                    <textarea name="UserAnswers[answer_@(question.Id)]"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Type your answer here..."></textarea>
+                                }
+                                else
+                                {
+                                    <!-- Multiple Choice / True False -->
+                                    <div class="row g-3">
+                                        @foreach (var answer in question.Answers)
+                                        {
+                                            <div class="col-12">
+                                                <div class="form-check answer-option">
+                                                    <input type="radio"
+                                                           class="form-check-input"
+                                                           name="UserAnswers[answer_@(question.Id)]"
+                                                           value="@answer.Id"
+                                                           id="answer_@(answer.Id)" />
+                                                    <label class="form-check-label w-100" for="answer_@(answer.Id)">
+                                                        @answer.AnswerText
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-success btn-lg w-100" id="submitBtn">
+                        <i class="fa fa-check"></i> Submit Exam
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <h5>No Questions</h5>
+                    <p>This exam doesn't have any questions yet.</p>
+                </div>
+            }
+        </form>
+    }
+</div>
+
+<style>
+    .answer-option {
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .answer-option:hover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd;
+        }
+
+        .answer-option input[type="radio"]:checked + label {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+    #timerDisplay {
+        text-align: center;
+    }
+
+        #timerDisplay.warning {
+            color: #ffc107;
+            animation: timerPulse 1s infinite;
+        }
+
+        #timerDisplay.danger {
+            color: #dc3545;
+            animation: timerPulse 0.5s infinite;
+        }
+
+    @@keyframes timerPulse {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+
+    }
+
+    .question-image-container {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .question-image {
+        max-width: 600px;
+        max-height: 400px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Timer functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const durationSeconds = @Model.DurationSeconds;
+            let timeRemaining = durationSeconds;
+            const timeDisplay = document.getElementById('timeRemaining');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Start timer
+            const timerInterval = setInterval(function() {
+                timeRemaining--;
+
+                // Update display
+                const hours = Math.floor(timeRemaining / 3600);
+                const minutes = Math.floor((timeRemaining % 3600) / 60);
+                const seconds = timeRemaining % 60;
+
+                let displayText = '';
+                if (hours > 0) {
+                    displayText = `${hours}h ${minutes}m ${seconds}s`;
+                } else if (minutes > 0) {
+                    displayText = `${minutes}m ${seconds}s`;
+                } else {
+                    displayText = `${seconds}s`;
+                }
+
+                timeDisplay.textContent = displayText;
+
+                // Change color based on time remaining
+                if (timeRemaining <= 60) {
+                    timerDisplay.classList.add('danger');
+                    timerDisplay.classList.remove('warning');
+                } else if (timeRemaining <= 300) {
+                    timerDisplay.classList.add('warning');
+                    timerDisplay.classList.remove('danger');
+                } else {
+                    timerDisplay.classList.remove('warning', 'danger');
+                }
+
+                // Auto-submit when time is up
+                       if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+
+            // Show warning message
+            abp.message.info('Time is up! Your exam will be submitted automatically.');
+
+            // Wait 2 seconds before submitting the form
+            setTimeout(function() {
+                document.querySelector('form').submit();
+            }, 2000);  // 2000 milliseconds = 2 seconds
+        }
+        }, 1000);
+
+            // // Warn user before leaving page
+            // window.addEventListener('beforeunload', function(e) {
+            //     if (!document.querySelector('form').hasAttribute('data-submitted')) {
+            //         e.preventDefault();
+            //         e.returnValue = '';
+            //     }
+            // });
+
+            // Mark form as submitted when submit button clicked
+            submitBtn.addEventListener('click', function() {
+                document.querySelector('form').setAttribute('data-submitted', 'true');
+
+            });
+        });
+    </script>
+}
