@@ -1,0 +1,17 @@
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Application.Contracts.deps.json
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Application.Contracts.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Application.Contracts.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Domain.Shared.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Domain.Shared.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.csproj.AssemblyReference.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.AssemblyInfoInputs.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.AssemblyInfo.cs
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.csproj.CoreCompileInputs.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\Elearnin.B4B07CD1.Up2Date
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\refint\ElearningSystem.Application.Contracts.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ElearningSystem.Application.Contracts.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\obj\Debug\net9.0\ref\ElearningSystem.Application.Contracts.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Domain.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Application.Contracts\bin\Debug\net9.0\ElearningSystem.Domain.pdb
