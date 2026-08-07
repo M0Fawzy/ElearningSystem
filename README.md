@@ -48,32 +48,32 @@ A full-stack e-learning web application built with **ASP.NET Core MVC**, **ABP F
 ## Screenshots
 
 ### Admin — Manage Students
-![Admin Students](admin-students.png)
+![Admin Students](Screenshots/admin-students.png)
 
 ---
 
 ### Teacher — Dashboard
-![Teacher Dashboard](teacher-dashboard.png)
+![Teacher Dashboard](Screenshots/teacher-dashboard.png)
 
 ---
 
 ### Teacher — Upload Lectures
-![Teacher Lectures](teacher-lectures.png)
+![Teacher Lectures](Screenshots/teacher-lectures.png)
 
 ---
 
 ### Teacher — Manage Exams
-![Teacher Exams](teacher-exams.png)
+![Teacher Exams](Screenshots/teacher-exams.png)
 
 ---
 
 ### Student — Dashboard
-![Student Dashboard](student-dashboard.png)
+![Student Dashboard](Screenshots/student-dashboard.png)
 
 ---
 
 ### Student — My Lectures
-![Student Lectures](student-lectures.png)
+![Student Lectures](Screenshots/student-lectures.png)
 
 ---
 
