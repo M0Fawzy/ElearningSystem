@@ -1,0 +1,15 @@
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\bin\Debug\net9.0\ElearningSystem.Domain.deps.json
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\bin\Debug\net9.0\ElearningSystem.Domain.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\bin\Debug\net9.0\ElearningSystem.Domain.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\bin\Debug\net9.0\ElearningSystem.Domain.Shared.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\bin\Debug\net9.0\ElearningSystem.Domain.Shared.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.csproj.AssemblyReference.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.AssemblyInfoInputs.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.AssemblyInfo.cs
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\Elearnin.471E0AF2.Up2Date
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\refint\ElearningSystem.Domain.dll
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ElearningSystem.Domain.pdb
+C:\Users\Mohamed\source\repos\ElearningSystem\src\ElearningSystem.Domain\obj\Debug\net9.0\ref\ElearningSystem.Domain.dll
